@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>面会予約システム</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>面会予約フォーム</h1>
+  <form id="reservationForm">
+    <label>氏名: <input type="text" id="name" required></label><br>
+    <label>日付: <input type="date" id="date" required></label><br>
+    <label>時間: <input type="time" id="time" required></label><br>
+    <button type="submit">予約する</button>
+  </form>
+  <p id="message"></p>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
