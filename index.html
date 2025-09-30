@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>面会予約フォーム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 0.95em;
+        }
+
+        .required::after {
+            content: " *";
+            color: #e74c3c;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e8eeef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #3498db;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #bee5eb;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            body {
+                padding: 10px;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>面会予約フォーム</h1>
+            <p>ご希望の面会予約を承ります</p>
+        </div>
+
+        <div class="form-container">
+            <!-- <div class="info-box">
+                <strong>📱 ご利用方法</strong><br>
+                このフォームはWebブラウザで直接ご利用いただけます。LINEアプリ内で開く必要はありません。
+            </div> -->
+
+            <div id="successMessage" class="message success"></div>
+            <div id="errorMessage" class="message error"></div>
+            
+            <form id="reservationForm">
+                <div class="form-group">
+                    <label for="residentName" class="required">入居者名</label>
+                    <input type="text" id="residentName" name="resident" required placeholder="例: 山田 太郎">
+                </div>
+
+                <div class="form-group">
+                    <label for="visitorName" class="required">面会者名</label>
+                    <input type="text" id="visitorName" name="visitor" required placeholder="例: 山田 花子">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="visitDate" class="required">希望日</label>
+                        <input type="date" id="visitDate" name="date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="visitTime" class="required">希望時間</label>
+                        <select id="visitTime" name="time" required>
+                            <option value="">選択してください</option>
+                            <option value="09:00">09:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="11:00">11:00</option>
+                            <option value="13:00">13:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:00">17:00</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="phoneNumber" class="required">電話番号</label>
+                    <input type="tel" id="phoneNumber" name="phone" required placeholder="例: 090-1234-5678">
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">備考</label>
+                    <textarea id="notes" name="note" rows="4" placeholder="その他ご要望などがあればご記入ください"></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    予約を送信
+                </button>
+                
+                <div id="loading" class="loading">
+                    送信中...
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 設定
+        const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwr7lwQrupWw6JR6psYg92C0Fe9ShDGLzvpcedE--aDcBJ8_SWq1dxVZlMfBh5ltx54Yw/exec';
+
+        // DOM要素
+        const form = document.getElementById('reservationForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('面会予約フォームが読み込まれました');
+            console.log('GASエンドポイント:', GAS_ENDPOINT);
+            
+            // 日付の最小値を今日に設定
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('visitDate').min = today;
+            
+            // 最大値を3ヶ月後に設定
+            const maxDate = new Date();
+            maxDate.setMonth(maxDate.getMonth() + 3);
+            document.getElementById('visitDate').max = maxDate.toISOString().split('T')[0];
+        });
+
+        // フォーム送信処理
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            // バリデーション
+            if (!validateForm()) {
+                return;
+            }
+
+            // 送信データ作成
+            const formData = {
+                resident: document.getElementById('residentName').value.trim(),
+                visitor: document.getElementById('visitorName').value.trim(),
+                date: document.getElementById('visitDate').value,
+                time: document.getElementById('visitTime').value,
+                phone: document.getElementById('phoneNumber').value.trim(),
+                note: document.getElementById('notes').value.trim(),
+                userId: generateUserId() // 簡易ユーザーID生成
+            };
+
+            console.log('送信データ:', formData);
+            
+            // 送信実行
+            await submitReservation(formData);
+        });
+
+        // 簡易ユーザーID生成
+        function generateUserId() {
+            return 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36);
+        }
+
+        // フォームバリデーション
+        function validateForm() {
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+
+            // エラーメッセージをクリア
+            hideMessage('error');
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.style.borderColor = '#e74c3c';
+                    field.style.backgroundColor = '#fdf2f2';
+                } else {
+                    field.style.borderColor = '#e8eeef';
+                    field.style.backgroundColor = '#f8f9fa';
+                }
+            });
+
+            // 電話番号の形式チェック
+            const phoneField = document.getElementById('phoneNumber');
+            const phoneRegex = /^[0-9\-()+]+$/;
+            if (phoneField.value && !phoneRegex.test(phoneField.value)) {
+                isValid = false;
+                phoneField.style.borderColor = '#e74c3c';
+                phoneField.style.backgroundColor = '#fdf2f2';
+                showMessage('error', '電話番号の形式が正しくありません');
+            }
+
+            // 日付の未来チェック
+            const dateField = document.getElementById('visitDate');
+            const selectedDate = new Date(dateField.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today) {
+                isValid = false;
+                dateField.style.borderColor = '#e74c3c';
+                dateField.style.backgroundColor = '#fdf2f2';
+                showMessage('error', '希望日は今日以降の日付を選択してください');
+            }
+
+            if (!isValid && !errorMessage.textContent) {
+                showMessage('error', '必須項目をすべて入力してください');
+            }
+
+            return isValid;
+        }
+
+        // 予約送信関数
+        // 修正した送信関数
+async function submitReservation(formData) {
+  try {
+    setLoading(true);
+    hideMessage('error');
+    hideMessage('success');
+
+    console.log('GASに送信中...');
+
+    // 方法A: no-corsモードで送信（シンプルな解決策）
+    const response = await fetch(GAS_ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors', // CORSを回避
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData)
+    });
+
+    // no-corsモードではresponseを読めないので成功とみなす
+    console.log('送信完了（CORS回避モード）');
+    showMessage('success', '✅ 予約が送信されました！確認のご連絡をお待ちください。');
+    form.reset();
+    
+  } catch (error) {
+    console.error('送信エラー:', error);
+    showMessage('error', '❌ 送信に失敗しました。時間をおいて再度お試しください。');
+  } finally {
+    setLoading(false);
+  }
+}
+
+        // UIヘルパー関数
+        function setLoading(isLoading) {
+            if (isLoading) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = '送信中...';
+                loading.style.display = 'block';
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '予約を送信';
+                loading.style.display = 'none';
+            }
+        }
+
+        function showMessage(type, message) {
+            const element = type === 'success' ? successMessage : errorMessage;
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+
+        function hideMessage(type) {
+            const element = type === 'success' ? successMessage : errorMessage;
+            element.style.display = 'none';
+        }
+
+        // 入力フィールドのリアルタイムバリデーション
+        document.querySelectorAll('input, select, textarea').forEach(field => {
+            field.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.style.borderColor = '#e8eeef';
+                    this.style.backgroundColor = '#f8f9fa';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
